@@ -4,44 +4,182 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>رزرو نوبت کلینیک مسیر</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>کلینیک مسیر</h1>
-            <p>رزرو آنلاین جلسات مشاوره</p>
-        </header>
-        <section class="card">
-            <h2>ثبت نوبت</h2>
-            <label>نوع جلسه</label>
-            <select>
-                <option>حضوری</option>
-                <option>آنلاین</option>
-            </select>
-            <label>تاریخ</label>
-            <input type="date">
-            <label>ساعت</label>
-            <select>
-                <option>17:00</option>
-                <option>18:00</option>
-                <option>19:00</option>
-                <option>20:00</option>
-                <option>21:00</option>
-            </select>
-            <label>نام و نام خانوادگی</label>
-            <input type="text">
-            <label>شماره موبایل</label>
-            <input type="tel">
-            <label>توضیحات</label>
-            <textarea rows="4"></textarea>
-            <div class="price">
-                940,000 تومان
+
+<div class="page-wrap">
+
+    <!-- Header -->
+    <header class="site-header">
+        <div class="header-inner">
+            <div class="logo">
+                <span class="logo-mark">م</span>
+                <div>
+                    <strong>کلینیک مسیر</strong>
+                    <small>رزرو آنلاین جلسه مشاوره</small>
+                </div>
             </div>
-            <button>
-                ثبت و پرداخت
-            </button>
-        </section>
-    </div>
+            <div class="header-badge">
+                <span class="dot"></span> پذیرش آنلاین فعال است
+            </div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="main">
+
+        <!-- Step indicator -->
+        <div class="steps">
+            <div class="step active" id="step-dot-1">
+                <div class="step-num">۱</div>
+                <span>نوع جلسه</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="step-dot-2">
+                <div class="step-num">۲</div>
+                <span>تاریخ و ساعت</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="step-dot-3">
+                <div class="step-num">۳</div>
+                <span>اطلاعات شما</span>
+            </div>
+            <div class="step-line"></div>
+            <div class="step" id="step-dot-4">
+                <div class="step-num">۴</div>
+                <span>پرداخت</span>
+            </div>
+        </div>
+
+        <div class="booking-container">
+
+            <!-- === STEP 1: Session type === -->
+            <section class="card" id="step-1">
+                <h2 class="card-title">نوع جلسه را انتخاب کنید</h2>
+                <p class="card-subtitle">هر جلسه ۵۰ دقیقه · هزینه: ۹۴۰٬۰۰۰ تومان</p>
+
+                <div class="session-grid">
+                    <label class="session-card" id="card-online">
+                        <input type="radio" name="session_type" value="online">
+                        <div class="session-icon">💻</div>
+                        <strong>آنلاین</strong>
+                        <span>از طریق تماس تصویری</span>
+                    </label>
+                    <label class="session-card" id="card-inperson">
+                        <input type="radio" name="session_type" value="inperson">
+                        <div class="session-icon">🏥</div>
+                        <strong>حضوری</strong>
+                        <span>در مطب کلینیک مسیر</span>
+                    </label>
+                </div>
+
+                <div class="notice" id="inperson-notice" style="display:none">
+                    📍 آدرس مطب بعد از ثبت نوبت ارسال می‌شود.
+                </div>
+
+                <button class="btn-primary" id="btn-step1" disabled onclick="goToStep(2)">
+                    ادامه →
+                </button>
+            </section>
+
+            <!-- === STEP 2: Date & time === -->
+            <section class="card hidden" id="step-2">
+                <h2 class="card-title">تاریخ و ساعت</h2>
+
+                <!-- Calendar -->
+                <div class="calendar-wrap">
+                    <div class="cal-nav">
+                        <button class="cal-arrow" id="btn-prev-month" onclick="changeMonth(-1)">‹</button>
+                        <span class="cal-month-label" id="cal-month-label"></span>
+                        <button class="cal-arrow" id="btn-next-month" onclick="changeMonth(1)">›</button>
+                    </div>
+                    <div class="cal-days-header">
+                        <span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span>
+                    </div>
+                    <div class="cal-grid" id="cal-grid"></div>
+                </div>
+
+                <!-- Time slots -->
+                <div class="slots-wrap" id="slots-wrap" style="display:none">
+                    <h3 class="slots-title">ساعت مناسب را انتخاب کنید</h3>
+                    <div class="slots-grid" id="slots-grid"></div>
+                </div>
+
+                <div class="step-actions">
+                    <button class="btn-secondary" onclick="goToStep(1)">← برگشت</button>
+                    <button class="btn-primary" id="btn-step2" disabled onclick="goToStep(3)">ادامه →</button>
+                </div>
+            </section>
+
+            <!-- === STEP 3: User info === -->
+            <section class="card hidden" id="step-3">
+                <h2 class="card-title">اطلاعات شما</h2>
+
+                <div class="booking-summary" id="booking-summary-top"></div>
+
+                <div class="form-group">
+                    <label>نام و نام خانوادگی <span class="req">*</span></label>
+                    <input type="text" id="input-name" placeholder="مثلاً: سارا احمدی" oninput="validateStep3()">
+                </div>
+                <div class="form-group">
+                    <label>شماره موبایل <span class="req">*</span></label>
+                    <input type="tel" id="input-phone" placeholder="09xxxxxxxxx" maxlength="11" oninput="validateStep3()">
+                </div>
+                <div class="form-group">
+                    <label>توضیحات (اختیاری)</label>
+                    <textarea id="input-notes" rows="3" placeholder="اگر موضوع خاصی برای مشاوره دارید، می‌توانید اینجا بنویسید..."></textarea>
+                </div>
+
+                <div class="step-actions">
+                    <button class="btn-secondary" onclick="goToStep(2)">← برگشت</button>
+                    <button class="btn-primary" id="btn-step3" disabled onclick="goToStep(4)">ادامه →</button>
+                </div>
+            </section>
+
+            <!-- === STEP 4: Payment === -->
+            <section class="card hidden" id="step-4">
+                <h2 class="card-title">تأیید و پرداخت</h2>
+
+                <div class="final-summary" id="final-summary"></div>
+
+                <div class="price-box">
+                    <span>مبلغ قابل پرداخت</span>
+                    <strong>۹۴۰٬۰۰۰ تومان</strong>
+                </div>
+
+                <div class="notice">
+                    🔒 پرداخت امن از طریق درگاه زرین‌پال
+                </div>
+
+                <div class="step-actions">
+                    <button class="btn-secondary" onclick="goToStep(3)">← برگشت</button>
+                    <button class="btn-pay" id="btn-pay" onclick="submitBooking()">
+                        پرداخت و ثبت نوبت
+                    </button>
+                </div>
+            </section>
+
+            <!-- === SUCCESS === -->
+            <section class="card hidden" id="step-success">
+                <div class="success-icon">✅</div>
+                <h2 class="card-title">نوبت شما ثبت شد!</h2>
+                <p class="card-subtitle">جزئیات نوبت به زودی برایتان ارسال خواهد شد.</p>
+                <div class="booking-summary" id="success-summary"></div>
+                <button class="btn-primary" onclick="location.reload()">رزرو جدید</button>
+            </section>
+
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <p>کلینیک مسیر · پشتیبانی: ۰۹۱۲۰۰۰۰۰۰۰</p>
+    </footer>
+
+</div>
+
+<script src="/static/app.js"></script>
 </body>
 </html>
