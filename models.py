@@ -9,18 +9,14 @@ class Appointment(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # اطلاعات بیمار
     name = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(20), nullable=False)
 
-    # زمان نوبت
     date = db.Column(db.String(20), nullable=False)
     time = db.Column(db.String(10), nullable=False)
 
-    # online / حضوری
     session_type = db.Column(db.String(20), nullable=False)
 
-    # pending / paid / cancelled
     payment_status = db.Column(
         db.String(20),
         nullable=False,
@@ -29,7 +25,6 @@ class Appointment(db.Model):
 
     authority = db.Column(db.String(120))
     ref_id = db.Column(db.String(120))
-
     notes = db.Column(db.Text)
 
     created_at = db.Column(
