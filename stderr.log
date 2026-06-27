@@ -1,0 +1,70 @@
+Traceback (most recent call last):Traceback (most recent call last):
+  File "/home/h329306/booking/passenger_wsgi.py", line 1, in <module>
+    from app import app as application
+  File "/home/h329306/booking/app.py", line 270, in <module>
+    @app.route("test123")
+     ^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/scaffold.py", line 362, in decorator
+    self.add_url_rule(rule, endpoint, f, **options)
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/scaffold.py", line 47, in wrapper_func
+    return f(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/app.py", line 650, in add_url_rule
+    rule_obj = self.url_rule_class(rule, methods=methods, **options)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/werkzeug/routing/rules.py", line 475, in __init__
+    raise ValueError(f"URL rule '{string}' must start with a slash.")
+ValueError: URL rule 'test123' must start with a slash.
+Traceback (most recent call last):
+  File "/home/h329306/booking/passenger_wsgi.py", line 1, in <module>
+    from app import app as application
+  File "/home/h329306/booking/app.py", line 270, in <module>
+    @app.route("test123")
+     ^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/scaffold.py", line 362, in decorator
+    self.add_url_rule(rule, endpoint, f, **options)
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/scaffold.py", line 47, in wrapper_func
+    return f(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/app.py", line 650, in add_url_rule
+    rule_obj = self.url_rule_class(rule, methods=methods, **options)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/werkzeug/routing/rules.py", line 475, in __init__
+    raise ValueError(f"URL rule '{string}' must start with a slash.")
+ValueError: URL rule 'test123' must start with a slash.
+[UID:3955][791209] Child process with pid: 791247 was killed by signal: 15, core dumped: no
+Traceback (most recent call last):
+  File "/home/h329306/booking/passenger_wsgi.py", line 1, in <module>
+    from app import app as application
+  File "/home/h329306/booking/app.py", line 270, in <module>
+    @app.route("test123")
+     ^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/scaffold.py", line 362, in decorator
+    self.add_url_rule(rule, endpoint, f, **options)
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/scaffold.py", line 47, in wrapper_func
+    return f(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/app.py", line 650, in add_url_rule
+    rule_obj = self.url_rule_class(rule, methods=methods, **options)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/werkzeug/routing/rules.py", line 475, in __init__
+    raise ValueError(f"URL rule '{string}' must start with a slash.")
+ValueError: URL rule 'test123' must start with a slash.
+Traceback (most recent call last):
+  File "/home/h329306/booking/passenger_wsgi.py", line 1, in <module>
+    from app import app as application
+  File "/home/h329306/booking/app.py", line 270, in <module>
+    @app.route("test123")
+     ^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/scaffold.py", line 362, in decorator
+    self.add_url_rule(rule, endpoint, f, **options)
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/scaffold.py", line 47, in wrapper_func
+    return f(self, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/flask/sansio/app.py", line 650, in add_url_rule
+    rule_obj = self.url_rule_class(rule, methods=methods, **options)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/h329306/virtualenv/booking/3.11/lib/python3.11/site-packages/werkzeug/routing/rules.py", line 475, in __init__
+    raise ValueError(f"URL rule '{string}' must start with a slash.")
+ValueError: URL rule 'test123' must start with a slash.
+[UID:3955][792042] Child process with pid: 792149 was killed by signal: 15, core dumped: no
