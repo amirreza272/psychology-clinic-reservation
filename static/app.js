@@ -24,69 +24,96 @@ function toFa(n) {
 }
 
 // ─── تبدیل تقویم شمسی ↔ میلادی ─────────────────────────────
-// الگوریتم جلالی — بدون نیاز به کتابخانه
-const JalaliToGregorian = (jy, jm, jd) => {
-    let jy1 = jy - 979;
-    let jm1 = jm - 1;
-    let jd1 = jd - 1;
-    let j_day_no = 365 * jy1 + Math.floor(jy1 / 33) * 8 + Math.floor((jy1 % 33 + 3) / 4);
-    for (let i = 0; i < jm1; ++i) j_day_no += (i < 6) ? 31 : 30;
-    j_day_no += jd1;
-    let g_day_no = j_day_no + 79;
-    let gy = 1600 + 400 * Math.floor(g_day_no / 146097);
-    g_day_no %= 146097;
-    let leap = true;
-    if (g_day_no >= 36525) { g_day_no--; gy += 100 * Math.floor(g_day_no / 36524); g_day_no %= 36524; if (g_day_no >= 365) g_day_no++; else leap = false; }
-    gy += 4 * Math.floor(g_day_no / 1461);
-    g_day_no %= 1461;
-    if (g_day_no >= 366) { leap = false; g_day_no--; gy += Math.floor(g_day_no / 365); g_day_no %= 365; }
-    const gDays = [31, (leap ? 29 : 28), 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    let gm;
-    for (gm = 0; gm < 12 && g_day_no >= gDays[gm]; gm++) g_day_no -= gDays[gm];
-    return [gy, gm + 1, g_day_no + 1];
-};
+// کپی مستقیم از jalaali-js v2 (MIT License) — تست‌شده و اثبات‌شده
 
-const GregorianToJalali = (gy, gm, gd) => {
-    const g_d_no = 365 * gy + Math.floor((gy + 3) / 4) - Math.floor((gy + 99) / 100) + Math.floor((gy + 399) / 400);
-    const gDays2 = [31, (gy % 4 === 0 && (gy % 100 !== 0 || gy % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    let g_d_no2 = g_d_no;
-    for (let i = 0; i < gm - 1; i++) g_d_no2 += gDays2[i];
-    g_d_no2 += gd - 1;
-    let j_day_no = g_d_no2 - 79;
-    let j_np = Math.floor(j_day_no / 12053);
-    j_day_no %= 12053;
-    let jy = 979 + 33 * j_np + 4 * Math.floor(j_day_no / 1461);
-    j_day_no %= 1461;
-    if (j_day_no >= 366) { jy += Math.floor((j_day_no - 1) / 365); j_day_no = (j_day_no - 1) % 365; }
-    const jDays = [31, 31, 31, 31, 31, 31, 30, 30, 30, 30, 30, 29];
-    let jm;
-    for (jm = 0; jm < 11 && j_day_no >= jDays[jm]; jm++) j_day_no -= jDays[jm];
-    return [jy, jm + 1, j_day_no + 1];
-};
+const JALAALI_BREAKS = [
+    -61,9,38,199,426,686,756,818,1111,1181,
+    1210,1635,2060,2097,2192,2262,2324,2394,2456,3178
+];
+function _div(a,b){ return ~~(a/b); }
+function _mod(a,b){ return a - ~~(a/b)*b; }
+
+function _g2d(gy,gm,gd){
+    let d=_div((gy+_div(gm-8,6)+100100)*1461,4)+_div(153*_mod(gm+9,12)+2,5)+gd-34840408;
+    return d-_div(_div(gy+100100+_div(gm-8,6),100)*3,4)+752;
+}
+function _d2g(jdn){
+    let j=4*jdn+139361631;
+    j=j+_div(_div(4*jdn+183187720,146097)*3,4)*4-3908;
+    const i=_div(_mod(j,1461),4)*5+308;
+    return {gd:_div(_mod(i,153),5)+1, gm:_mod(_div(i,153),12)+1, gy:_div(j,1461)-100100+_div(8-(_mod(_div(i,153),12)+1),6)};
+}
+function _jalCalCore(jy){
+    const gy=jy+621;
+    let leapJ=-14,jp=JALAALI_BREAKS[0],jm=0,jump=0;
+    for(let i=1;i<JALAALI_BREAKS.length;i++){
+        jm=JALAALI_BREAKS[i]; jump=jm-jp;
+        if(jy<jm) break;
+        leapJ=leapJ+_div(jump,33)*8+_div(_mod(jump,33),4);
+        jp=jm;
+    }
+    const n=jy-jp;
+    leapJ=leapJ+_div(n,33)*8+_div(_mod(n,33)+3,4);
+    if(_mod(jump,33)===4&&jump-n===4) leapJ+=1;
+    const leapG=_div(gy,4)-_div((_div(gy,100)+1)*3,4)-150;
+    return {gy, march:20+leapJ-leapG, jump, n};
+}
+function _leapFromCycle(jump,n){
+    let adj=n;
+    if(jump-n<6) adj=n-jump+_div(jump+4,33)*33;
+    let leap=_mod(_mod(adj+1,33)-1,4);
+    if(leap===-1) leap=4;
+    return leap;
+}
+function _isLeapJalaali(jy){
+    const {jump,n}=_jalCalCore(jy);
+    return _leapFromCycle(jump,n)===0;
+}
+function _j2d(jy,jm,jd){
+    const {gy,march}=_jalCalCore(jy);
+    return _g2d(gy,3,march)+(jm-1)*31-_div(jm,7)*(jm-7)+jd-1;
+}
+function _d2j(jdn){
+    const gy=_d2g(jdn).gy;
+    let jy=gy-621;
+    const r=_jalCalCore(jy);
+    const leap=_leapFromCycle(r.jump,r.n);
+    const jdn1f=_g2d(gy,3,r.march);
+    let k=jdn-jdn1f;
+    if(k>=0){
+        if(k<=185) return {jy,jm:1+_div(k,31),jd:_mod(k,31)+1};
+        k-=186;
+    } else {
+        jy-=1; k+=179;
+        if(leap===1) k+=1;
+    }
+    return {jy, jm:7+_div(k,30), jd:_mod(k,30)+1};
+}
+
+function JalaliToGregorian(jy,jm,jd){
+    const g=_d2g(_j2d(+jy,+jm,+jd));
+    return [g.gy,g.gm,g.gd];
+}
+function GregorianToJalali(gy,gm,gd){
+    const j=_d2j(_g2d(+gy,+gm,+gd));
+    return [j.jy,j.jm,j.jd];
+}
+function jalaliMonthLen(jy,jm){
+    if(jm<=6) return 31;
+    if(jm<=11) return 30;
+    return _isLeapJalaali(jy)?30:29;
+}
+function jalaliFirstWeekday(jy,jm){
+    const [gy,gm,gd]=JalaliToGregorian(jy,jm,1);
+    const jsDay=new Date(gy,gm-1,gd).getDay();
+    return jsDay===6?0:jsDay+1;
+}
 
 // ─── نام ماه‌های شمسی ────────────────────────────────────────
 const JALALI_MONTHS = [
     'فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور',
     'مهر','آبان','آذر','دی','بهمن','اسفند'
 ];
-
-// روزهای هر ماه شمسی
-function jalaliMonthLen(jy, jm) {
-    if (jm <= 6) return 31;
-    if (jm <= 11) return 30;
-    // اسفند
-    const [gy] = JalaliToGregorian(jy, 12, 29);
-    const isLeap = (gy % 4 === 0 && (gy % 100 !== 0 || gy % 400 === 0));
-    return isLeap ? 30 : 29;
-}
-
-// اول ماه شمسی چه روزی از هفته است؟  (0=شنبه … 6=جمعه)
-function jalaliFirstWeekday(jy, jm) {
-    const [gy, gm, gd] = JalaliToGregorian(jy, jm, 1);
-    const d = new Date(gy, gm - 1, gd).getDay(); // 0=Sun
-    // تبدیل به ترتیب شنبه-اول: Sat=0,Sun=1,...,Fri=6
-    return (d + 1) % 7;
-}
 
 // ─── مقداردهی اولیه ─────────────────────────────────────────
 function init() {
@@ -323,11 +350,11 @@ function goToStep(step) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ─── ارسال رزرو به API ───────────────────────────────────────
+// ─── ارسال رزرو و رفتن به درگاه پرداخت ─────────────────────
 function submitBooking() {
     const btn = document.getElementById('btn-pay');
     btn.disabled = true;
-    btn.textContent = 'در حال ثبت...';
+    btn.textContent = 'در حال اتصال به درگاه...';
 
     const payload = {
         name:         state.name,
@@ -338,17 +365,16 @@ function submitBooking() {
         notes:        state.notes,
     };
 
-    fetch('/api/book', {
+    fetch('/api/payment/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     })
     .then(r => r.json())
     .then(data => {
-        if (data.success) {
-            // ─── موفق: نمایش صفحه موفقیت ───
-            // (بعداً اینجا ریدایرکت به زرین‌پال اضافه می‌شود)
-            showSuccess();
+        if (data.success && data.payment_url) {
+            // ریدایرکت به درگاه زرین‌پال
+            window.location.href = data.payment_url;
         } else {
             btn.disabled = false;
             btn.textContent = 'پرداخت و ثبت نوبت';
@@ -362,9 +388,33 @@ function submitBooking() {
     });
 }
 
-// ─── نمایش پیام خطا ─────────────────────────────────────────
+// ─── بررسی پارامترهای URL بعد از بازگشت از درگاه ────────────
+function checkUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('success') === '1') {
+        const refId = params.get('ref') || '';
+        showSuccessPage(refId);
+        // پاک کردن URL
+        window.history.replaceState({}, '', window.location.pathname);
+        return;
+    }
+
+    const error = params.get('error');
+    if (error) {
+        const messages = {
+            payment_failed:  'پرداخت ناموفق بود یا لغو شد. می‌توانید دوباره تلاش کنید.',
+            slot_taken:      'متأسفانه این ساعت در حین پرداخت شما توسط نفر دیگری رزرو شد. لطفاً ساعت دیگری انتخاب کنید.',
+            invalid_session: 'نشست شما منقضی شده است. لطفاً دوباره رزرو کنید.',
+        };
+        const msg = messages[error] || 'خطایی رخ داد. لطفاً دوباره تلاش کنید.';
+        showErrorBanner(msg);
+        window.history.replaceState({}, '', window.location.pathname);
+    }
+}
+
+// ─── نمایش خطا داخل مرحله ۴ ────────────────────────────────
 function showError(msg) {
-    // حذف خطای قبلی اگر وجود داشت
     const old = document.getElementById('error-box');
     if (old) old.remove();
 
@@ -377,24 +427,39 @@ function showError(msg) {
     `;
     box.textContent = '⚠️ ' + msg;
     document.getElementById('step-4').appendChild(box);
+    setTimeout(() => box.remove(), 6000);
+}
 
-    setTimeout(() => box.remove(), 5000);
+// ─── بنر خطا بالای صفحه (بعد از بازگشت از درگاه) ───────────
+function showErrorBanner(msg) {
+    const banner = document.createElement('div');
+    banner.style.cssText = `
+        background:#fff0f0; border:1px solid #f0aaaa;
+        border-radius:10px; padding:16px 20px; color:#c0392b;
+        font-size:14px; text-align:center; margin-bottom:16px;
+    `;
+    banner.textContent = '⚠️ ' + msg;
+    document.querySelector('.booking-container').prepend(banner);
+    setTimeout(() => banner.remove(), 8000);
 }
 
 // ─── نمایش صفحه موفقیت ──────────────────────────────────────
-function showSuccess() {
+function showSuccessPage(refId) {
     [1,2,3,4].forEach(s => document.getElementById(`step-${s}`).classList.add('hidden'));
     document.getElementById('step-success').classList.remove('hidden');
 
-    const sessionLabel = state.sessionType === 'online' ? 'آنلاین' : 'حضوری';
+    // وقتی از URL برمی‌گردد، اطلاعات در state نیست — فقط ref_id داریم
+    const refLine = refId
+        ? `<div><span class="label">کد پیگیری:</span><span class="val">${toFa(refId)}</span></div>`
+        : '';
+
     document.getElementById('success-summary').innerHTML = `
-        <div><span class="label">نام:</span><span class="val">${state.name}</span></div>
-        <div><span class="label">نوع جلسه:</span><span class="val">${sessionLabel}</span></div>
-        <div><span class="label">تاریخ:</span><span class="val">${toFa(state.selectedDate)}</span></div>
-        <div><span class="label">ساعت:</span><span class="val">${toFa(state.selectedTime)}</span></div>
+        ${refLine}
+        <div style="font-size:13px;color:#6b7a8d;margin-top:8px">
+            جزئیات نوبت به زودی با شما در میان گذاشته خواهد شد.
+        </div>
     `;
 
-    // بروزرسانی نوار مراحل — همه done
     for (let s = 1; s <= 4; s++) {
         const dot = document.getElementById(`step-dot-${s}`);
         dot.classList.remove('active');
@@ -405,4 +470,7 @@ function showSuccess() {
 }
 
 // ─── شروع ────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    checkUrlParams();
+    init();
+});
