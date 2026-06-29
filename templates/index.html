@@ -6,7 +6,7 @@
     <title>رزرو نوبت کلینیک مسیر</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="https://masircenter.com/booking/static/style.css">
 </head>
 <body>
 
@@ -59,7 +59,7 @@
             <!-- === STEP 1: Session type === -->
             <section class="card" id="step-1">
                 <h2 class="card-title">نوع جلسه را انتخاب کنید</h2>
-                <p class="card-subtitle">هر جلسه ۵۰ دقیقه · هزینه: ۹۴۰٬۰۰۰ تومان</p>
+                <p class="card-subtitle">هر جلسه ۵۰ دقیقه</p>
 
                 <div class="session-grid">
                     <label class="session-card" id="card-online">
@@ -81,7 +81,7 @@
                 </div>
 
                 <button class="btn-primary" id="btn-step1" disabled onclick="goToStep(2)">
-                    ادامه →
+                    ادامه
                 </button>
             </section>
 
@@ -109,8 +109,8 @@
                 </div>
 
                 <div class="step-actions">
-                    <button class="btn-secondary" onclick="goToStep(1)">← برگشت</button>
-                    <button class="btn-primary" id="btn-step2" disabled onclick="goToStep(3)">ادامه →</button>
+                    <button class="btn-secondary" onclick="goToStep(1)">برگشت</button>
+                    <button class="btn-primary" id="btn-step2" disabled onclick="goToStep(3)">ادامه</button>
                 </div>
             </section>
 
@@ -122,20 +122,20 @@
 
                 <div class="form-group">
                     <label>نام و نام خانوادگی <span class="req">*</span></label>
-                    <input type="text" id="input-name" placeholder="مثلاً: سارا احمدی" oninput="validateStep3()">
+                    <input type="text" id="input-name" oninput="validateStep3()">
                 </div>
                 <div class="form-group">
                     <label>شماره موبایل <span class="req">*</span></label>
-                    <input type="tel" id="input-phone" placeholder="09xxxxxxxxx" maxlength="11" oninput="validateStep3()">
+                    <input type="tel" id="input-phone" maxlength="11" oninput="validateStep3()">
                 </div>
                 <div class="form-group">
                     <label>توضیحات (اختیاری)</label>
-                    <textarea id="input-notes" rows="3" placeholder="اگر موضوع خاصی برای مشاوره دارید، می‌توانید اینجا بنویسید..."></textarea>
+                    <textarea id="input-notes" rows="3"></textarea>
                 </div>
 
                 <div class="step-actions">
-                    <button class="btn-secondary" onclick="goToStep(2)">← برگشت</button>
-                    <button class="btn-primary" id="btn-step3" disabled onclick="goToStep(4)">ادامه →</button>
+                    <button class="btn-secondary" onclick="goToStep(2)">برگشت</button>
+                    <button class="btn-primary" id="btn-step3" disabled onclick="goToStep(4)">ادامه</button>
                 </div>
             </section>
 
@@ -145,9 +145,9 @@
 
                 <div class="final-summary" id="final-summary"></div>
 
-                <div class="price-box">
+                <div class="price-box" id="price-box">
                     <span>مبلغ قابل پرداخت</span>
-                    <strong>۹۴۰٬۰۰۰ تومان</strong>
+                    <strong id="price-label">—</strong>
                 </div>
 
                 <div class="notice">
@@ -155,7 +155,7 @@
                 </div>
 
                 <div class="step-actions">
-                    <button class="btn-secondary" onclick="goToStep(3)">← برگشت</button>
+                    <button class="btn-secondary" onclick="goToStep(3)">برگشت</button>
                     <button class="btn-pay" id="btn-pay" onclick="submitBooking()">
                         پرداخت و ثبت نوبت
                     </button>
@@ -164,11 +164,32 @@
 
             <!-- === SUCCESS === -->
             <section class="card hidden" id="step-success">
-                <div class="success-icon">✅</div>
-                <h2 class="card-title">نوبت شما ثبت شد!</h2>
-                <p class="card-subtitle">جزئیات نوبت به زودی برایتان ارسال خواهد شد.</p>
-                <div class="booking-summary" id="success-summary"></div>
-                <button class="btn-primary" onclick="location.reload()">رزرو جدید</button>
+                <div class="result-icon">✅</div>
+                <h2 class="result-title">نوبت شما با موفقیت ثبت شد</h2>
+                <p class="result-subtitle">منتظر تماس تیم کلینیک مسیر باشید</p>
+                <div class="result-summary" id="success-summary"></div>
+                <div class="notice" style="text-align:center; margin-bottom:20px">
+                    📞 در صورت نیاز به تغییر نوبت با ما تماس بگیرید
+                    <br><strong>۰۹۰۱۷۶۴۴۶۷۸</strong>
+                </div>
+                <button class="btn-primary" onclick="location.reload()">رزرو نوبت جدید</button>
+            </section>
+
+            <!-- === FAILURE === -->
+            <section class="card hidden" id="step-failed">
+                <div class="result-icon">❌</div>
+                <h2 class="result-title">پرداخت ناموفق بود</h2>
+                <p class="result-subtitle">مبلغی از حساب شما کسر نشده است</p>
+                <div class="notice" style="background:#fff0f0; border-color:#f0aaaa; color:#a94442; margin-bottom:24px">
+                    ⚠️ <span id="fail-reason">پرداخت لغو شد یا با خطا مواجه شد.</span>
+                </div>
+                <button class="btn-primary" onclick="retryPayment()" style="margin-bottom:12px">
+                    تلاش دوباره
+                </button>
+                <div class="fail-divider">یا</div>
+                <a class="btn-phone" href="tel:09017644678">
+                    📞 رزرو تلفنی &mdash; ۰۹۰۱۷۶۴۴۶۷۸
+                </a>
             </section>
 
         </div>
@@ -180,6 +201,13 @@
 
 </div>
 
-<script src="/static/app.js"></script>
+<script>
+    // آدرس پایه پروژه — از Flask تزریق می‌شود
+    // اگر روی /booking باشد: BASE = '/booking'
+    // اگر روی / باشد: BASE = ''
+    window.APP_BASE = "{{ request.script_root }}";
+</script>
+<script src="{{ url_for('static', filename='jalaali.js') }}"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
