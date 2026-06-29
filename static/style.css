@@ -432,7 +432,51 @@ body {
     border-top: 1px solid var(--border);
 }
 
-/* ===================== LOADING ===================== */
+/* ===================== SUCCESS / FAILURE ===================== */
+.result-icon { font-size: 56px; text-align: center; margin-bottom: 14px; }
+.result-title { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 6px; }
+.result-subtitle { font-size: 14px; color: var(--text-muted); text-align: center; margin-bottom: 20px; }
+
+.result-summary {
+    background: var(--teal-bg);
+    border: 1px solid rgba(26,127,110,.2);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+.result-summary div { padding: 4px 0; display: flex; gap: 8px; }
+.result-summary .label { color: var(--text-muted); flex-shrink: 0; }
+.result-summary .val { font-weight: 600; }
+
+.fail-divider {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 12px 0;
+    position: relative;
+}
+.fail-divider::before, .fail-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%; width: 42%;
+    height: 1px; background: var(--border);
+}
+.fail-divider::before { right: 0; }
+.fail-divider::after  { left: 0; }
+
+.btn-phone {
+    display: block; width: 100%;
+    padding: 14px;
+    background: white;
+    color: var(--teal);
+    border: 2px solid var(--teal);
+    border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 15px; font-weight: 700;
+    text-align: center; text-decoration: none;
+    transition: all .2s;
+}
+.btn-phone:hover { background: var(--teal-bg); }
 .loading-slots {
     grid-column: 1/-1; text-align: center;
     padding: 20px; color: var(--text-muted); font-size: 13px;
