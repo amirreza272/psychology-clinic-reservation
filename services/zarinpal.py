@@ -1,7 +1,7 @@
 import requests
 
-MERCHANT_ID      = "38c7a109-8115-4090-bfb1-021b481a6926"
-AMOUNT_ONLINE    = 10000
+MERCHANT_ID      = "MERCHANT_ID"
+AMOUNT_ONLINE    = 8500000
 AMOUNT_INPERSON  = 8000000
 CALLBACK_URL     = "https://masircenter.com/booking/api/payment/callback"
 ZARINPAL_REQUEST = "https://api.zarinpal.com/pg/v4/payment/request.json"
