@@ -17,7 +17,13 @@ const state = {
     availableDays: [],      // لیست روزهای آزاد از API (میلادی)
 };
 
-// ─── تبدیل اعداد فارسی ──────────────────────────────────────
+// ─── آدرس‌دهی API ────────────────────────────────────────────
+// BASE به صورت خودکار از Flask تنظیم می‌شود
+// روی /booking → '/booking' ، روی / → ''
+const BASE = (window.APP_BASE || '').replace(/\/$/, '');
+function apiUrl(path) {
+    return BASE + path;
+}
 const FA = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
 function toFa(n) {
     return String(n).replace(/\d/g, d => FA[d]);
@@ -124,19 +130,52 @@ function init() {
     state.calYear = jy;
     state.calMonth = jm;
 
-    // بارگذاری روزهای آزاد از API
-    fetch('/api/available-days')
-        .then(r => r.json())
-        .then(days => {
-            state.availableDays = days; // آرایه‌ای از رشته‌های میلادی مثل '2026-06-25'
-            renderCalendar();
+    // اول تقویم را با روزهای پیش‌فرض (بدون API) نمایش بده
+    // تا کاربر منتظر نماند
+    state.availableDays = buildFallbackDays();
+    renderCalendar();
+
+    // سپس از API روزهای دقیق‌تر را بگیر و آپدیت کن
+    fetch(apiUrl('/api/available-days'))
+        .then(r => {
+            if (!r.ok) throw new Error('API error');
+            return r.json();
         })
-        .catch(() => renderCalendar());
+        .then(days => {
+            if (Array.isArray(days) && days.length > 0) {
+                state.availableDays = days;
+                renderCalendar();
+            }
+        })
+        .catch(() => {
+            // API جواب نداد — fallback محاسبه‌شده قبلی باقی می‌ماند
+        });
 
     // رویدادهای انتخاب نوع جلسه
     document.querySelectorAll('input[name="session_type"]').forEach(radio => {
         radio.addEventListener('change', onSessionTypeChange);
     });
+}
+
+// ─── محاسبه روزهای آزاد بدون API (fallback) ─────────────────
+function buildFallbackDays() {
+    const result = [];
+    const today = new Date();
+    const nowHour = today.getHours();
+
+    for (let i = 1; i <= 60; i++) {
+        const t = new Date(today);
+        t.setDate(today.getDate() + i);
+
+        // فردا بعد از ساعت ۲۰
+        if (i === 1 && nowHour >= 20) continue;
+
+        // جمعه — getDay() در JS: 5=Friday
+        if (t.getDay() === 5) continue;
+
+        result.push(t.toISOString().split('T')[0]);
+    }
+    return result;
 }
 
 // ─── مرحله ۱: نوع جلسه ──────────────────────────────────────
@@ -250,7 +289,7 @@ function renderSlots() {
 
     const type = state.sessionType === 'inperson' ? 'inperson' : 'online';
 
-    fetch(`/api/slots?date=${state.selectedDateGreg}&type=${type}`)
+    fetch(apiUrl(`/api/slots?date=${state.selectedDateGreg}&type=${type}`))
         .then(r => r.json())
         .then(slots => {
             grid.innerHTML = '';
@@ -345,6 +384,10 @@ function goToStep(step) {
         state.phone = document.getElementById('input-phone').value.trim();
         state.notes = document.getElementById('input-notes').value.trim();
         renderSummary('final-summary');
+
+        // قیمت بر اساس نوع جلسه
+        const price = state.sessionType === 'online' ? '۸۵۰٬۰۰۰ تومان' : '۸۰۰٬۰۰۰ تومان';
+        document.getElementById('price-label').textContent = price;
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -365,7 +408,7 @@ function submitBooking() {
         notes:        state.notes,
     };
 
-    fetch('/api/payment/start', {
+    fetch(apiUrl('/api/payment/start'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -395,7 +438,6 @@ function checkUrlParams() {
     if (params.get('success') === '1') {
         const refId = params.get('ref') || '';
         showSuccessPage(refId);
-        // پاک کردن URL
         window.history.replaceState({}, '', window.location.pathname);
         return;
     }
@@ -403,14 +445,40 @@ function checkUrlParams() {
     const error = params.get('error');
     if (error) {
         const messages = {
-            payment_failed:  'پرداخت ناموفق بود یا لغو شد. می‌توانید دوباره تلاش کنید.',
-            slot_taken:      'متأسفانه این ساعت در حین پرداخت شما توسط نفر دیگری رزرو شد. لطفاً ساعت دیگری انتخاب کنید.',
+            payment_failed:  'پرداخت توسط کاربر لغو شد یا با خطا مواجه شد.',
+            slot_taken:      'این ساعت در حین پرداخت شما توسط نفر دیگری رزرو شد. لطفاً ساعت دیگری انتخاب کنید.',
             invalid_session: 'نشست شما منقضی شده است. لطفاً دوباره رزرو کنید.',
         };
         const msg = messages[error] || 'خطایی رخ داد. لطفاً دوباره تلاش کنید.';
-        showErrorBanner(msg);
+        showFailurePage(msg);
         window.history.replaceState({}, '', window.location.pathname);
     }
+}
+
+// ─── صفحه ناموفق ─────────────────────────────────────────────
+function showFailurePage(msg) {
+    [1,2,3,4].forEach(s => document.getElementById(`step-${s}`).classList.add('hidden'));
+    document.getElementById('step-success').classList.add('hidden');
+    document.getElementById('step-failed').classList.remove('hidden');
+    document.getElementById('fail-reason').textContent = msg;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─── تلاش دوباره — برگشت به مرحله ۱ ────────────────────────
+function retryPayment() {
+    document.getElementById('step-failed').classList.add('hidden');
+    // ریست state
+    state.sessionType = null;
+    state.selectedDate = null;
+    state.selectedDateGreg = null;
+    state.selectedTime = null;
+    state.name = '';
+    state.phone = '';
+    state.notes = '';
+    document.querySelectorAll('.session-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('input[name="session_type"]').forEach(r => r.checked = false);
+    document.getElementById('btn-step1').disabled = true;
+    goToStep(1);
 }
 
 // ─── نمایش خطا داخل مرحله ۴ ────────────────────────────────
@@ -446,18 +514,16 @@ function showErrorBanner(msg) {
 // ─── نمایش صفحه موفقیت ──────────────────────────────────────
 function showSuccessPage(refId) {
     [1,2,3,4].forEach(s => document.getElementById(`step-${s}`).classList.add('hidden'));
+    document.getElementById('step-failed').classList.add('hidden');
     document.getElementById('step-success').classList.remove('hidden');
 
-    // وقتی از URL برمی‌گردد، اطلاعات در state نیست — فقط ref_id داریم
     const refLine = refId
         ? `<div><span class="label">کد پیگیری:</span><span class="val">${toFa(refId)}</span></div>`
         : '';
 
     document.getElementById('success-summary').innerHTML = `
         ${refLine}
-        <div style="font-size:13px;color:#6b7a8d;margin-top:8px">
-            جزئیات نوبت به زودی با شما در میان گذاشته خواهد شد.
-        </div>
+        <div><span class="label">وضعیت پرداخت:</span><span class="val" style="color:var(--teal)">✓ موفق</span></div>
     `;
 
     for (let s = 1; s <= 4; s++) {
